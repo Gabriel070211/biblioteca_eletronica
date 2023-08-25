@@ -1,11 +1,60 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
+import * as Permissions from "expo-permissions";
+import {BarCodeScanner}from 'expo-barcode-scanner';
+
 
 export default class TransactionScreen extends Component {
+  constructor(props){
+    super(props);
+    this.state={
+      domState:"normal",
+      hasCameraPermissions:null,
+      scanned:false,
+      scannedData:"",
+      bookId:"",
+      studentId:""
+
+    }
+  }''
+  
+  getCameraPermissons = async domState=>{
+    const { status }= await Permissions.askAsync(Permissions.CAMERA)
+    this.setState({
+      hasCameraPermissions:status==='granted',
+      domState:domState,
+      scanned:false,
+
+    });
+  };
+
+  handleBarCodeScanned= async ({type,data})=>{
+    this.setState({
+      scannedData:data,
+      domState:"normal",
+      scanned:true,
+
+    })
+
+  }
+
   render() {
+    const {domState,hasCameraPermissions,scannedData,scanned}=this.state;
+    if(domState=="scanner"){
+      return(
+        <BarCodeScanner
+          onBarCodeScanned={scanned ? undefined : this.handleBarCodeScanned}
+          style={StyleSheet.absoluteFillObject}
+        />
+        
+        )
+    }
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Tela de Transação</Text>
+        <Text style={styles.text}>{hasCameraPermissions ? scannedData : "solicitar permissao da camera"}</Text>
+        <TouchableOpacity style={styles .buttons} onPress={()=>this.getCameraPermissons("scanner")}> 
+         <Text style={styles.textButton} >Digitalizar QR code</Text> 
+        </TouchableOpacity>
       </View>
     );
   }
@@ -21,5 +70,15 @@ const styles = StyleSheet.create({
   text: {
     color: "#ffff",
     fontSize: 30
+  },
+  buttons:{
+    backgroundColor:"#000",
+    padding:10,
+    margin:20,
+  },
+  textButton:{
+    color:"#fff",
+    fontSize:18,
   }
 });
+
